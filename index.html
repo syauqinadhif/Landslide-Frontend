@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+    </style>
+    <title>Landslide Sensing System Status</title>
+  </head>
+  <body class="bg-gray-200 h-screen">
+    <div class="flex flex-col mx-4">
+      <h1 class="font-bold mx-auto mt-32 text-2xl text-center sm:text-3xl">
+        Landslide Sensing System Status
+      </h1>
+      <div id="statusBox" class="w-64 h-64 bg-white mx-auto mt-8 sm:mt-16 p-8">
+        <p class="font-semibold text-lg text-center text-white">
+          Status: <span id="status">Connecting...</span>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // Connect to the WebSocket server
+      const ws = new WebSocket("ws://localhost:8080");
+
+      // Event: WebSocket connection opened
+      ws.onopen = () => {
+        console.log("WebSocket connection opened");
+        document.getElementById("status").innerText = "Connected to WebSocket";
+        document.getElementById("statusBox").classList.replace('bg-white', 'bg-blue-800');
+      };
+
+      // Event: Message received from WebSocket server
+      ws.onmessage = (event) => {
+        const statusMessage = event.data;
+        console.log(`Received message: ${statusMessage}`);
+        document.getElementById("status").innerText = statusMessage;
+
+        const statusBox = document.getElementById("statusBox");
+
+        // Reset background color classes
+        statusBox.classList.remove('bg-blue-800', 'bg-green-500', 'bg-yellow-300', 'bg-red-600');
+
+        // Apply background color based on statusMessage
+        switch (statusMessage) {
+          case "Aman":
+            statusBox.classList.add('bg-green-500');
+            break;
+          case "Siaga":
+            statusBox.classList.add('bg-yellow-300');
+            break;
+          case "Bahaya":
+            statusBox.classList.add('bg-red-600');
+            break;
+          default:
+            statusBox.classList.add('bg-gray-200');
+            break;
+        }
+      };
+
+      // Event: WebSocket connection error
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        document.getElementById("status").innerText = "WebSocket error";
+        document.getElementById("statusBox").classList.replace('bg-white', 'bg-gray-400');
+      };
+
+      // Event: WebSocket connection closed
+      ws.onclose = () => {
+        console.log("WebSocket connection closed");
+        document.getElementById("status").innerText = "Disconnected";
+        document.getElementById("statusBox").classList.replace('bg-white', 'bg-gray-300');
+      };
+    </script>
+  </body>
+</html>
